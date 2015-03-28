@@ -70,10 +70,19 @@ class World a where
 -- >>> nextGeneration w
 -- AliveCells [Cell 0 0,Cell 1 0,Cell 0 1]
 --
+-- >>> :{
+--  let w = AliveCells [Cell 0 0,  Cell 1 0, Cell 2 0,
+--                      Cell 0 1,            Cell 2 1,
+--                      Cell 0 2,  Cell 1 2, Cell 2 2]
+--  in  nextGeneration w
+-- :}
+-- AliveCells [Cell 0 0,Cell 2 0,Cell 0 2,Cell 2 2]
+--
 instance World AliveCells where
   alive (AliveCells cs) p = p `elem` cs
   nextGeneration w@(AliveCells cs) = AliveCells nextAliveCells where
-    notDepopuration = filter (not . depopuration w) cs
+    notOverpopuration = filter (not . overpopuration w) cs
+    notDepopuration = filter (not . depopuration w) notOverpopuration
     nextAliveCells = notDepopuration
 
 -- | 過密 - 生きているセルに隣接する生きたセルが4つ以上ならば、過密により死滅する。
