@@ -24,7 +24,7 @@ data Cell = Cell Int Int deriving (Show, Eq, Ord)
 neighbours :: Cell -> [Cell]
 neighbours (Cell x y) =
   [Cell a b|
-    a <- [x - 1, x, y + 1],
+    a <- [x - 1, x, x + 1],
     b <- [y - 1, y, y + 1],
     (Cell x y) /= (Cell a b)
   ]
@@ -66,11 +66,15 @@ class World a where
 -- >>> nextGeneration world
 -- AliveCells []
 --
+-- >>> let w = AliveCells [Cell 0 0, Cell 1 0, Cell 0 1]
+-- >>> nextGeneration w
+-- AliveCells [Cell 0 0,Cell 1 0,Cell 0 1]
+--
 instance World AliveCells where
   alive (AliveCells cs) p = p `elem` cs
   nextGeneration w@(AliveCells cs) = AliveCells nextAliveCells where
-    unknownCells = filter (\c -> c `elem` cs) $ concatMap neighbours cs
-    nextAliveCells = filter (not . depopuration w) $ unknownCells
+    notDepopuration = filter (not . depopuration w) cs
+    nextAliveCells = notDepopuration
 
 -- | 過密 - 生きているセルに隣接する生きたセルが4つ以上ならば、過密により死滅する。
 -- >>> :{
@@ -96,7 +100,10 @@ overpopuration w c =
 -- >>> let w = AliveCells [Cell 0 0, Cell 0 1, Cell 1 0]
 -- >>> depopuration w (Cell 0 0)
 -- False
---
+-- >>> depopuration w (Cell 1 0)
+-- False
+-- >>> depopuration w (Cell 0 1)
+-- False
 -- >>> depopuration w (Cell 0 99)
 -- True
 --
