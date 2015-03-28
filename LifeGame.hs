@@ -72,6 +72,26 @@ instance World AliveCells where
     unknownCells = filter (\c -> c `elem` cs) $ concatMap neighbours cs
     nextAliveCells = filter (not . depopuration w) $ unknownCells
 
+-- | 過密 - 生きているセルに隣接する生きたセルが4つ以上ならば、過密により死滅する。
+-- >>> :{
+--  let w = AliveCells [Cell 0 0,  Cell 1 0, Cell 2 0,
+--                      Cell 0 1,            Cell 2 1,
+--                      Cell 0 2,  Cell 1 2, Cell 2 2]
+-- :}
+--
+-- >>> overpopuration w (Cell 1 1)
+-- True
+-- >>> overpopuration w (Cell 2 1)
+-- True
+-- >>> overpopuration w (Cell 1 3)
+-- False
+--
+overpopuration :: World a => a -> Cell -> Bool
+overpopuration w c =
+  let num = length $ filter (alive w) $ neighbours c
+  in num >= 4
+
+
 -- | 過疎 - 生きているセルに隣接する生きたセルが1つ以下ならば、過疎により死滅する。
 -- >>> let w = AliveCells [Cell 0 0, Cell 0 1, Cell 1 0]
 -- >>> depopuration w (Cell 0 0)
