@@ -13,6 +13,9 @@ where
 --
 -- >>> (Cell 1 2) > (Cell 1 3)
 -- False
+--
+-- >>> max (Cell 1 1) (Cell 2 3)
+-- Cell 2 3
 data Cell = Cell Int Int deriving (Show, Eq, Ord)
 
 -- | ムーア近傍
@@ -30,9 +33,19 @@ neighbours (Cell x y) =
 -- >>> AliveCells [Cell 0 0,  Cell 1 1,  Cell 2 3]
 -- AliveCells [Cell 0 0,Cell 1 1,Cell 2 3]
 --
-data AliveCells = AliveCells [Cell] deriving (Show)
+-- | Show
+-- >>> let acs = AliveCells [Cell 0 0]
+-- >>> print acs
+-- AliveCells [Cell 0 0]
 
--- | 世界がある
+data AliveCells = AliveCells [Cell] deriving (Show, Eq, Ord)
+
+-- 世界がある
+--
+-- | Show World
+-- >>> let world = AliveCells [Cell 0 0]
+-- >>> print world
+-- AliveCells [Cell 0 0]
 class World a where
   alive :: a -> Cell -> Bool
   nextGeneration :: a -> a
@@ -53,4 +66,20 @@ class World a where
 instance World AliveCells where
   alive (AliveCells cs) p = p `elem` cs
   nextGeneration w = w
+
+-- | 世界を表示する
+-- >>> let world = AliveCells [Cell 0 0]
+-- >>> display [0..2] [0..2] world
+-- o__
+-- ___
+-- ___
+--
+display :: World a => [Int] -> [Int] -> a -> IO()
+display xs ys w =
+  mapM_ (putStrLn . lineAt)  ys
+    where
+      lineAt y = map cellToChar [Cell a y| a <- xs]
+      cellToChar c
+        | alive w c = 'o'
+        | otherwise = '_'
 
