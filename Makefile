@@ -1,0 +1,2 @@
+test:
+	doctest LifeGame.hs
