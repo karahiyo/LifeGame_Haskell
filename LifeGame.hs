@@ -85,6 +85,12 @@ instance World AliveCells where
     notDepopuration = filter (not . depopuration w) notOverpopuration
     nextAliveCells = notDepopuration
 
+-- | 生存 - 生きているセルに隣接する生きたセルが2つか3つならば、次の世代でも生存する。
+survive :: World a => a -> Cell -> Bool
+survive w c =
+  let num = length $ filter (alive w) $ neighbours c
+  in num == 2 || num == 3
+
 -- | 過密 - 生きているセルに隣接する生きたセルが4つ以上ならば、過密により死滅する。
 -- >>> :{
 --  let w = AliveCells [Cell 0 0,  Cell 1 0, Cell 2 0,
@@ -103,7 +109,6 @@ overpopuration :: World a => a -> Cell -> Bool
 overpopuration w c =
   let num = length $ filter (alive w) $ neighbours c
   in num >= 4
-
 
 -- | 過疎 - 生きているセルに隣接する生きたセルが1つ以下ならば、過疎により死滅する。
 -- >>> let w = AliveCells [Cell 0 0, Cell 0 1, Cell 1 0]
