@@ -58,14 +58,32 @@ class World a where
 -- >>> alive world (Cell 0 0)
 -- False
 --
+-- >>> alive world (Cell 0 (-1))
+-- False
+--
 -- | 次の世代の生きているCellを返す
 -- >>> let world = AliveCells [Cell 0 0]
 -- >>> nextGeneration world
--- AliveCells [Cell 0 0]
+-- AliveCells []
 --
 instance World AliveCells where
   alive (AliveCells cs) p = p `elem` cs
-  nextGeneration w = w
+  nextGeneration w@(AliveCells cs) = AliveCells nextAliveCells where
+    unknownCells = filter (\c -> c `elem` cs) $ concatMap neighbours cs
+    nextAliveCells = filter (not . depopuration w) $ unknownCells
+
+-- | 過疎 - 生きているセルに隣接する生きたセルが1つ以下ならば、過疎により死滅する。
+-- >>> let w = AliveCells [Cell 0 0, Cell 0 1, Cell 1 0]
+-- >>> depopuration w (Cell 0 0)
+-- False
+--
+-- >>> depopuration w (Cell 0 99)
+-- True
+--
+depopuration :: World a => a -> Cell -> Bool
+depopuration w c =
+  let num = length $ filter (alive w)  $ neighbours c
+  in num <= 1
 
 -- | 世界を表示する
 -- >>> let world = AliveCells [Cell 0 0]
