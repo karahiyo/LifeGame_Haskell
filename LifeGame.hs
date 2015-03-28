@@ -44,6 +44,13 @@ class World a where
 --
 -- >>> alive world (Cell 0 0)
 -- False
+--
+-- | 次の世代の生きているCellを返す
+-- >>> let world = AliveCells [Cell 0 0]
+-- >>> nextGeneration world
+-- AliveCells [Cell 0 0]
+--
 instance World AliveCells where
   alive (AliveCells cs) p = p `elem` cs
+  nextGeneration w = w
 
