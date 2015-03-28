@@ -1,6 +1,8 @@
 module LifeGame
 where
 
+import Data.List
+
 -- | 碁盤のような格子があり、一つの格子はセル（細胞）と呼ばれる
 -- >>> Cell 1 2
 -- Cell 1 2
@@ -68,7 +70,7 @@ class World a where
 --
 -- >>> let w = AliveCells [Cell 0 0, Cell 1 0, Cell 0 1]
 -- >>> nextGeneration w
--- AliveCells [Cell 0 0,Cell 1 0,Cell 0 1]
+-- AliveCells [Cell 0 0,Cell 0 1,Cell 1 0,Cell 1 1]
 --
 -- >>> :{
 --  let w = AliveCells [Cell 0 0,  Cell 1 0, Cell 2 0,
@@ -76,14 +78,26 @@ class World a where
 --                      Cell 0 2,  Cell 1 2, Cell 2 2]
 --  in  nextGeneration w
 -- :}
--- AliveCells [Cell 0 0,Cell 2 0,Cell 0 2,Cell 2 2]
+-- AliveCells [Cell (-1) 1,Cell 0 0,Cell 0 2,Cell 1 (-1),Cell 1 3,Cell 2 0,Cell 2 2,Cell 3 1]
+--
+-- >>> let w = AliveCells [Cell 0 0,  Cell 1 0, Cell 2 0]
+-- >>> nextGeneration w
+-- AliveCells [Cell 1 (-1),Cell 1 0,Cell 1 1]
 --
 instance World AliveCells where
   alive (AliveCells cs) p = p `elem` cs
   nextGeneration w@(AliveCells cs) = AliveCells nextAliveCells where
-    notOverpopuration = filter (not . overpopuration w) cs
-    notDepopuration = filter (not . depopuration w) notOverpopuration
-    nextAliveCells = notDepopuration
+    neighboursBeDead = filter (\c -> not $ c `elem` cs) $ concatMap neighbours cs
+    willBeBorn = filter (born w) neighboursBeDead
+    willBeAlive = filter (survive w) cs
+    uniq = map head . group . sort
+    nextAliveCells = uniq (willBeBorn ++ willBeAlive)
+
+-- | 誕生 - 死んでいるセルに隣接する生きたセルがちょうど3つあれば、次の世代が誕生する。
+born :: World a => a -> Cell -> Bool
+born w c =
+  let num = length $ filter (alive w) $ neighbours c
+  in num == 3
 
 -- | 生存 - 生きているセルに隣接する生きたセルが2つか3つならば、次の世代でも生存する。
 survive :: World a => a -> Cell -> Bool
